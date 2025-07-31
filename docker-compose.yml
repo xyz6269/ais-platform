@@ -1,0 +1,42 @@
+services:
+
+  postgres:
+    image: postgres:15
+    container_name: platform-app-postgres-container
+    restart: always
+    environment:
+      POSTGRES_DB: users_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  cassandra:
+    image: cassandra:latest
+    container_name: platform-app-cassandra-container
+    ports:
+      - "9042:9042"
+    volumes:
+      - cassandra_data:/var/lib/cassandra
+    environment:
+      - CASSANDRA_CLUSTER_NAME=MyCluster
+      - HEAP_NEWSIZE=128M
+      - MAX_HEAP_SIZE=512M
+      - JVM_OPTS=-Xms256m -Xmx512m -XX:+UseG1GC -XX:MaxGCPauseMillis=300
+    deploy:
+      resources:
+        limits:
+          memory: 768M
+          cpus: '1.0'
+    healthcheck:
+      test: ["CMD-SHELL", "cqlsh -u cassandra -p cassandra -e 'describe keyspaces' || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+
+volumes:
+  postgres_data:
+  cassandra_data:

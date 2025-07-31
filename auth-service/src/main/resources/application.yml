@@ -1,0 +1,46 @@
+server:
+  port: 8081
+
+spring:
+  threads:
+    virtual:
+      enabled: true
+  application:
+    name: auth-service
+  datasource:
+    url: jdbc:postgresql://localhost:5432/users_db
+    username: postgres
+    password: password
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    show-sql: true
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        format_sql: true
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+  cloud:
+    consul:
+      host: localhost
+      port: 8500
+      discovery:
+        service-name: ${spring.application.name}
+        instance-id: auth-service-${spring.application.instance-id:${random.value}}
+        prefer-ip-address: true
+        health-check-path: /actuator/health
+        health-check-interval: 15s
+#      enabled: false
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+    endpoint:
+      health:
+        show-details: always
+
+jwt:
+  secret: ${JWT_SECRET:s5768t9y0ui9886r754e57r68t9y0uiu80y7t86r75145r6tfy2uwUY1IUIPDQCWHVI68r7e5w6w4e57r8t9y0u9y8t7r68e57i46uws465e7r8t9y0u9y8t9r8e7}
+  expiration: 86400
