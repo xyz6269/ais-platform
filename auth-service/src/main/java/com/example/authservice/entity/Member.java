@@ -1,18 +1,18 @@
 package com.example.authservice.entity;
 
-import com.example.authservice.enums.Gender;
-import com.example.authservice.enums.Major;
-import com.example.authservice.enums.Role;
+import com.example.authservice.enums.*;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
+import lombok.Builder;
 
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 @Entity
+@Table(name = "member")
+@Builder
 public class Member {
 
     @Id
@@ -33,26 +33,37 @@ public class Member {
     private String phoneNumber;
 
     @Column(nullable = false, length = 50)
+    @Enumerated(EnumType.STRING)
     @JsonIgnore
     private Gender gender;
 
     @Column(nullable = false, length = 50)
+    @Enumerated(EnumType.STRING)
     private Major major;
+
+    @Column(nullable = false, length = 50)
+    @Enumerated(EnumType.STRING)
+    private AcademicYear academicYear;
+
+    @Column(nullable = true, length = 100)
+    private String interests;
+
+    @Column(nullable = false, length = 50)
+    @Enumerated(EnumType.STRING)
+    private AccountStatus status = AccountStatus.DISABLED;
 
     @Column(nullable = false, length = 150)
     @JsonIgnore
-    private Set<Role> roles;
+    private Set<Role> roles = Set.of(Role.USER);
 
     @Column(nullable = false, length = 255)
     @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private String password;
 
-    public Member() {
-        roles = new HashSet<>();
-        roles.add(Role.USER);
-    }
 
-    public Member(Long id, String email, String firstName, String lastName, String phoneNumber, Gender gender, Major major, Set<Role> roles, String password) {
+    public Member() {}
+
+    public Member(Long id, String email, String firstName, String lastName, String phoneNumber, Gender gender, Major major, AcademicYear academicYear, String interests, AccountStatus status, Set<Role> roles, String password) {
         this.id = id;
         this.email = email;
         this.firstName = firstName;
@@ -60,6 +71,9 @@ public class Member {
         this.phoneNumber = phoneNumber;
         this.gender = gender;
         this.major = major;
+        this.academicYear = academicYear;
+        this.interests = interests;
+        this.status = status;
         this.roles = roles;
         this.password = password;
     }
@@ -118,6 +132,30 @@ public class Member {
 
     public void setMajor(Major major) {
         this.major = major;
+    }
+
+    public AcademicYear getAcademicYear() {
+        return academicYear;
+    }
+
+    public void setAcademicYear(AcademicYear academicYear) {
+        this.academicYear = academicYear;
+    }
+
+    public String getInterests() {
+        return interests;
+    }
+
+    public void setInterests(String interests) {
+        this.interests = interests;
+    }
+
+    public AccountStatus getStatus() {
+        return status;
+    }
+
+    public void setStatus(AccountStatus status) {
+        this.status = status;
     }
 
     public Set<Role> getRoles() {

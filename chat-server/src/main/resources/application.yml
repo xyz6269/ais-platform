@@ -1,16 +1,16 @@
 server:
-  port: 8081
+  port: 8082
 
 spring:
   threads:
     virtual:
       enabled: true
   application:
-    name: auth-service
+    name: chat-server
   datasource:
-    url: jdbc:postgresql://localhost:5432/users_db
-    username: ${DB_USERNAME}
-    password: ${DB_PASSWORD}
+    url: jdbc:postgresql://localhost:5432/chat_db
+    username: postgres
+    password: password
     driver-class-name: org.postgresql.Driver
   jpa:
     show-sql: true
@@ -26,25 +26,10 @@ spring:
       port: 8500
       discovery:
         service-name: ${spring.application.name}
-        instance-id: auth-service-${spring.application.instance-id:${random.value}}
+        instance-id: chat-server-${spring.application.instance-id:${random.value}}
         prefer-ip-address: true
         health-check-path: /actuator/health
         health-check-interval: 15s
-  mail:
-    host: smtp.gmail.com
-    port: 587
-    username: ${CLUB_EMAIL}
-    password: ${CLUB_EMAIL_PASSWORD}
-    properties:
-      mail:
-        smtp:
-          auth: true
-          starttls:
-            required: true
-            enable: true
-          timeout: 20000
-          connectiontimeout: 20000
-          writetimeout: 20000
 
 management:
   endpoints:
@@ -55,14 +40,22 @@ management:
       health:
         show-details: always
 
+socket:
+   host: localhost
+   port: 9000
+
 jwt:
   secret: ${JWT_SECRET}
-
-link:
-  whatsapp: ${INVITE_LINK}
 
 springdoc:
   api-docs:
     path: /v3/api-docs
   swagger-ui:
     path: /swagger-ui.html
+
+
+logging:
+  level:
+    com.example.chat: DEBUG
+    com.datastax.oss.driver: INFO
+

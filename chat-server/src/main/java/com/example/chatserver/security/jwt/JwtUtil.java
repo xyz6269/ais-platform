@@ -1,4 +1,4 @@
-package com.example.authservice.security.jwt;
+package com.example.chatserver.security.jwt;
 
 
 import io.jsonwebtoken.Claims;
@@ -9,12 +9,14 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
 import javax.crypto.SecretKey;
 import java.util.Date;
+import java.util.List;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -43,6 +45,14 @@ public class JwtUtil {
                 .getPayload();
     }
 
+    public List<GrantedAuthority> getAuthoritiesFromToken(String token) {
+        Claims claims = getClaims(token);
+        List<String> authorities = claims.get("authorities", List.class);
+        return authorities.stream()
+                .map(SimpleGrantedAuthority::new)
+                .collect(Collectors.toList());
+    }
+
     public boolean isTokenValid(String token) {
         return !isExpired(token);
     }
@@ -50,6 +60,11 @@ public class JwtUtil {
     private boolean isExpired(String token) {
         return getClaims(token).getExpiration().before(new Date());
     }
+
+    public String extractUserEmail(String token) {
+        return getClaims(token).getSubject();
+    }
+
 
     public static String getCurrentUserEmail() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();

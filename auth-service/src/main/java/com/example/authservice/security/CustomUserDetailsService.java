@@ -12,9 +12,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
-//@DependsOn({
-//        "memberRepository"
-//})
 public class CustomUserDetailsService implements UserDetailsService {
 
     private final MemberRepository memberRepository;
@@ -22,7 +19,7 @@ public class CustomUserDetailsService implements UserDetailsService {
     @Override
     @Transactional(readOnly = true)
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        return memberRepository.findUserByEmail(username)
+        return memberRepository.findMemberByEmail(username)
                 .map(CustomUserDetails::new)
                 .orElseThrow(() -> new RuntimeException("There is no user available with this email: "+username));
     }
