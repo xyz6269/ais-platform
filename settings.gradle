@@ -1,3 +1,4 @@
 rootProject.name = 'platform-app'
 include 'auth-service'
 include 'chat-server'
+include 'chat-service'

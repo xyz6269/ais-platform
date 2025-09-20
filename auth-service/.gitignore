@@ -38,3 +38,4 @@ out/
 
 ### sh files
 env_vars.sh
+/sql/

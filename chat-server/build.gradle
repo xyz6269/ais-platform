@@ -2,20 +2,16 @@ plugins {
     id 'java'
     id 'org.springframework.boot' version '3.5.4'
     id 'io.spring.dependency-management' version '1.1.7'
+    id 'com.google.protobuf' version '0.9.4'
 }
 
 group = 'com.example'
 version = '0.0.1-SNAPSHOT'
 
+
 java {
     toolchain {
         languageVersion = JavaLanguageVersion.of(21)
-    }
-}
-
-configurations {
-    compileOnly {
-        extendsFrom annotationProcessor
     }
 }
 
@@ -25,32 +21,54 @@ repositories {
 
 ext {
     set('springCloudVersion', "2025.0.0")
+    set('springGrpcVersion', "0.10.0")
 }
 
 dependencies {
-    implementation 'com.corundumstudio.socketio:netty-socketio:2.0.11'
-    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
-    implementation 'org.springframework.boot:spring-boot-starter-security'
+    implementation 'com.corundumstudio.socketio:netty-socketio:2.0.13'
     implementation ('org.springframework.boot:spring-boot-starter-web') {exclude group: 'org.springframework.boot', module: 'spring-boot-starter-tomcat'}
     implementation 'org.springframework.boot:spring-boot-starter-undertow'
+    implementation 'org.springframework.boot:spring-boot-starter-security'
     implementation 'org.springframework.boot:spring-boot-starter-validation'
-    implementation 'io.jsonwebtoken:jjwt:0.12.6'
     implementation 'org.springframework.cloud:spring-cloud-starter-consul-discovery'
+    implementation 'org.springframework.grpc:spring-grpc-spring-boot-starter'
+    implementation 'jakarta.annotation:jakarta.annotation-api:2.1.1'
+    implementation 'io.jsonwebtoken:jjwt:0.12.6'
+    implementation 'io.grpc:grpc-services'
     implementation 'org.springframework.boot:spring-boot-starter-actuator'
-    implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.9'
-    implementation 'org.mapstruct:mapstruct:1.6.3'
     compileOnly 'org.projectlombok:lombok'
-    runtimeOnly 'org.postgresql:postgresql'
     annotationProcessor 'org.projectlombok:lombok'
-    annotationProcessor 'org.mapstruct:mapstruct-processor:1.6.3'
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
-    testImplementation 'org.springframework.security:spring-security-test'
+    testImplementation 'org.springframework.grpc:spring-grpc-test'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 }
 
 dependencyManagement {
     imports {
         mavenBom "org.springframework.cloud:spring-cloud-dependencies:${springCloudVersion}"
+        mavenBom "org.springframework.grpc:spring-grpc-dependencies:${springGrpcVersion}"
+    }
+}
+
+protobuf {
+    protoc {
+        // Pick a recent version of protoc
+        artifact = "com.google.protobuf:protoc:3.25.1"
+    }
+    plugins {
+        grpc {
+            // Match gRPC version with spring-grpc (around 1.63.0 now)
+            artifact = "io.grpc:protoc-gen-grpc-java:1.65.1"
+        }
+    }
+    generateProtoTasks {
+        all().each { task ->
+            task.plugins {
+                grpc {
+                    option "@generated=omit"
+                }
+            }
+        }
     }
 }
 

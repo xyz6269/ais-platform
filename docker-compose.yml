@@ -1,8 +1,8 @@
 services:
 
-  postgres:
+  postgres-users:
     image: postgres:15
-    container_name: platform-app-postgres-container
+    container_name: platform-app-container-postgres-userdb
     restart: always
     environment:
       POSTGRES_DB: users_db
@@ -11,7 +11,41 @@ services:
     ports:
       - "5432:5432"
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - postgres_user_data:/var/lib/postgresql/data
+
+
+  postgres-chat:
+    image: postgres:15
+    container_name: platform-app-container-postgres-chatdb
+    restart: always
+    environment:
+      POSTGRES_DB: chat_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_chat_data:/var/lib/postgresql/data
+
+
+  postgres-event:
+    image: postgres:15
+    container_name: platform-app-container-postgres-eventdb
+    restart: always
+    environment:
+      POSTGRES_DB: event_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+    ports:
+      - "5434:5432"
+    volumes:
+      - postgres_event_data:/var/lib/postgresql/data
 
 volumes:
-  postgres_data:
+  postgres_user_data:
+  postgres_chat_data:
+  postgres_event_data:
+
+networks:
+
+

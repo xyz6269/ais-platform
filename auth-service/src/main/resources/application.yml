@@ -45,6 +45,10 @@ spring:
           timeout: 20000
           connectiontimeout: 20000
           writetimeout: 20000
+  data:
+    redis:
+      host: host.docker.internal
+      port: 6379
 
 management:
   endpoints:
@@ -57,6 +61,7 @@ management:
 
 jwt:
   secret: ${JWT_SECRET}
+  expiration: 86400000
 
 link:
   whatsapp: ${INVITE_LINK}

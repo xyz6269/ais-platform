@@ -45,16 +45,16 @@ public class Member {
     @Enumerated(EnumType.STRING)
     private AcademicYear academicYear;
 
-    @Column(nullable = true, length = 100)
+    @Column(nullable = true, length = 250)
     private String interests;
 
     @Column(nullable = false, length = 50)
     @Enumerated(EnumType.STRING)
-    private AccountStatus status = AccountStatus.DISABLED;
+    private AccountStatus status;
 
     @Column(nullable = false, length = 150)
     @JsonIgnore
-    private Set<Role> roles = Set.of(Role.USER);
+    private Set<Role> roles;
 
     @Column(nullable = false, length = 255)
     @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)

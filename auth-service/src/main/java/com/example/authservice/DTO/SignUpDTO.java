@@ -36,7 +36,7 @@ public record SignUpDTO(
         String academicYear,
 
         @NotBlank
-        @Size(max = 50)
+        @Size(max = 250)
         String interests,
 
         @NotBlank(message = "Password is required")

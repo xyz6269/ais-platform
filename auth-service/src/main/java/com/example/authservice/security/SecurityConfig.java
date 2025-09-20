@@ -49,7 +49,8 @@ public class SecurityConfig {
                 .authorizeHttpRequests(authorize -> authorize
                         .requestMatchers( "/actuator/health"
                                         , "/api/v1/auth/signup"
-                                        , "/api/v1/auth/login"
+                                        , "/api/v1/auth/signin"
+                                        , "/api/v1/auth/health"
                                         , "/v2/api-docs"
                                         , "/v3/api-docs/**"
                                         , "/swagger-ui/**"
@@ -88,7 +89,7 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
-        config.setAllowedOrigins(List.of("http://localhost:3030", "https://yourdomain.com"));
+        config.setAllowedOrigins(List.of("http://localhost:3000", "https://yourdomain.com"));
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         config.setAllowedHeaders(List.of("Authorization", "Content-Type"));
         config.setAllowCredentials(true);

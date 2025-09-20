@@ -17,27 +17,32 @@ public class MemberController {
 
     private final MemberService memberService;
 
-    @PostMapping("/login")
-    public ResponseEntity<ApiResponse<LoginResponse>> login(@Valid @RequestBody LoginDTO request) {
-        return ResponseEntity.ok(new ApiResponse<>("Login Successful", memberService.authenticateUser(request)));
+    @PostMapping("/signin")
+    public ResponseEntity<LoginResponse> login(@Valid @RequestBody LoginDTO request) {
+        return ResponseEntity.ok(memberService.authenticateUser(request));
     }
 
     @PostMapping("/signup")
     @ResponseStatus(HttpStatus.CREATED)
-    public ApiResponse<String> signup(@Valid @RequestBody SignUpDTO request) {
-        return new ApiResponse<>("user registered successfully", memberService.registerUser(request));
+    public ResponseEntity<String> signup(@Valid @RequestBody SignUpDTO request) {
+        return ResponseEntity.ok(memberService.registerUser(request));
     }
 
     @PutMapping("/activate-account/{id}")
     @SecurityRequirement(name = "bearerAuth")
     @PreAuthorize("hasAuthority('ADMIN')")
-    public ApiResponse<String> activateAccount(@PathVariable Long id) {
-        return new ApiResponse<>("user : {} account's has been activated", memberService.activateUserAccount(id));
+    public ResponseEntity<String> activateAccount(@PathVariable Long id) {
+        return ResponseEntity.ok("user : " + memberService.activateUserAccount(id) + " account's has been activated");
     }
 
     @GetMapping("/me")
     @SecurityRequirement(name = "bearerAuth")
-    public ResponseEntity<ApiResponse<String>> currentAdmin() {
-        return ResponseEntity.ok(new ApiResponse<String>("current user email is: ", memberService.getCurrentUser()));
+    public ResponseEntity<String> currentAdmin() {
+        return ResponseEntity.ok(memberService.getCurrentUser());
+    }
+
+    @PostMapping("/health")
+    public ResponseEntity<String> healthCheck() {
+        return ResponseEntity.ok("authentication service status : ✅");
     }
 }

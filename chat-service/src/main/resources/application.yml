@@ -1,0 +1,64 @@
+server:
+  port: 8082
+
+spring:
+  threads:
+    virtual:
+      enabled: true
+  application:
+    name: chat-service
+  datasource:
+    url: jdbc:postgresql://localhost:5433/chat_db
+    username: postgres
+    password: password
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    show-sql: true
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        format_sql: true
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+  data:
+    redis:
+      host: localhost
+      port: 6379
+  grpc:
+    server:
+      port: 9090
+  cloud:
+    consul:
+      host: localhost
+      port: 8500
+      discovery:
+        service-name: ${spring.application.name}
+        instance-id: chat-service-${spring.application.instance-id:${random.value}}
+        prefer-ip-address: true
+        health-check-path: /actuator/health
+        health-check-interval: 15s
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+    endpoint:
+      health:
+        show-details: always
+
+jwt:
+  secret: ${JWT_SECRET}
+
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+
+
+logging:
+  level:
+    com.example.chat: DEBUG
+    com.datastax.oss.driver: INFO
+

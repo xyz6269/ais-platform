@@ -1,25 +1,17 @@
 server:
-  port: 8082
+  port: 9000
 
 spring:
   threads:
     virtual:
       enabled: true
+  grpc:
+    client:
+      chat-service:
+        address: 'static://localhost:9090'
+        negotiation-type: plaintext
   application:
     name: chat-server
-  datasource:
-    url: jdbc:postgresql://localhost:5432/chat_db
-    username: postgres
-    password: password
-    driver-class-name: org.postgresql.Driver
-  jpa:
-    show-sql: true
-    hibernate:
-      ddl-auto: update
-    properties:
-      hibernate:
-        format_sql: true
-        dialect: org.hibernate.dialect.PostgreSQLDialect
   cloud:
     consul:
       host: localhost
@@ -41,18 +33,12 @@ management:
         show-details: always
 
 socket:
-   host: localhost
-   port: 9000
+  host: localhost
+  port: 9000
+  context: "/socket.io"
 
 jwt:
   secret: ${JWT_SECRET}
-
-springdoc:
-  api-docs:
-    path: /v3/api-docs
-  swagger-ui:
-    path: /swagger-ui.html
-
 
 logging:
   level:
