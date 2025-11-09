@@ -9,11 +9,4 @@ public record ParticipantDTO(
     public static ParticipantDTO toDTO(Participant participant) {
         return new ParticipantDTO(participant.getId(), participant.getEmail());
     }
-
-    public static Participant toEntity(ParticipantDTO DTO) {
-        Participant p = new Participant();
-        p.setId(DTO.id);
-        p.setEmail(DTO.email);
-        return p;
-    }
 }

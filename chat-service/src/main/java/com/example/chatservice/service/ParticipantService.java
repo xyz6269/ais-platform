@@ -21,7 +21,7 @@ public class ParticipantService {
 
     @Transactional
     public void createParticipant(ParticipantDTO dto) {
-        Participant participant = new Participant(dto.id(), dto.email());
+        Participant participant = new Participant(dto.id(), dto.email(), false);
         log.debug("creating new participant : {}", dto.email());
         participantRepository.save(participant);
     }
@@ -30,6 +30,14 @@ public class ParticipantService {
     public void updateParticipant(Participant participant) {
         log.debug("updating participant : {}", participant.getEmail());
         participantRepository.save(participant);
+    }
+
+    @Transactional
+    public void makeParticipantAdmin(Long id) {
+        log.debug("updating participant of id : {}", id);
+        Participant participant = getParticipantById(id);
+        participant.setAdmin(true);
+        updateParticipant(participant);
     }
 
     @Transactional(readOnly = true)
@@ -42,6 +50,18 @@ public class ParticipantService {
     @Transactional(readOnly = true)
     public List<Participant> getParticipantsByEmails(List<String> emails) {
         return participantRepository.findParticipantsByEmails(emails);
+    }
+
+    @Transactional(readOnly = true)
+    public List<Participant> getAdminParticipants() {
+        return participantRepository.findParticipantByIsAdmin(true);
+    }
+
+    @Transactional(readOnly = true)
+    public Participant getParticipantById(Long id) {
+        return participantRepository
+                .findById(id)
+                .orElseThrow(() -> new ParticipantNotFoundException("No participant with the given Id exists"));
     }
 
     public static String getCurrentUser() {

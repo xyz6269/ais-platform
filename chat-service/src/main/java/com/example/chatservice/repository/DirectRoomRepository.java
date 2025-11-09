@@ -13,8 +13,6 @@ import java.util.UUID;
 @Repository
 public interface DirectRoomRepository extends JpaRepository<DirectRoom, UUID> {
 
-    Optional<DirectRoom> findDirectRoomById(UUID id);
-
     @Query("SELECT DISTINCT r FROM DirectRoom r JOIN r.participants p WHERE p.email = :email")
     List<DirectRoom> findRoomsByUserEmail(@Param("email") String userEmail);
 }

@@ -1,8 +1,9 @@
 package com.example.chatservice.service;
 
 import com.example.chatservice.DTO.AddParticipantDTO;
-import com.example.chatservice.DTO.ParticipantDTO;
 import com.example.chatservice.DTO.GroupRoomDTO;
+import com.example.chatservice.DTO.ParticipantDTO;
+import com.example.chatservice.entity.ChatMessage;
 import com.example.chatservice.entity.GroupRoom;
 import com.example.chatservice.entity.Participant;
 import com.example.chatservice.exceptions.RoomNotFoundException;
@@ -63,6 +64,20 @@ public class GroupRoomService {
     }
 
     @Transactional
+    public void addMessageToGroupChatRoom(ChatMessage message, UUID roomId) {
+        log.debug("Fetching room : {} to add the new message to it : {} is a participant", roomId, message.getContent());
+        GroupRoom room = getGroupRoomEntity(roomId);
+        room.getMessages().add(message);
+        updateGroupRoom(room);
+    }
+
+    @Transactional(readOnly = true)
+    public GroupRoom getGroupRoomEntity(UUID uuid) {
+        return groupRoomRepository.findById(uuid)
+                .orElseThrow(() -> new RoomNotFoundException("this room of id : "+ uuid.toString() +" doesn't exist"));
+    }
+
+    @Transactional
     public void addParticipantsToGroupRoom(AddParticipantDTO dto) {
         log.debug("fetching group : {} to add the user to it", dto.roomId());
         GroupRoom groupRoom = groupRoomRepository.findGroupRoomById(dto.roomId()).orElseThrow(() -> new RoomNotFoundException("Room with id : "+ dto.roomId().toString() +" wasn't found"));
@@ -91,5 +106,4 @@ public class GroupRoomService {
     private List<Participant> getParticipantsFromDTO(List<String> emails) {
         return participantService.getParticipantsByEmails(emails);
     }
-
 }

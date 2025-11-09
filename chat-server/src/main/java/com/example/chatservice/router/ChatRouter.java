@@ -6,10 +6,10 @@ import com.corundumstudio.socketio.SocketIOServer;
 import com.corundumstudio.socketio.listener.ConnectListener;
 import com.corundumstudio.socketio.listener.DataListener;
 import com.corundumstudio.socketio.listener.DisconnectListener;
-import com.example.chatservice.DTO.WSChatMessageDTO;
+import com.example.chatservice.DTO.ChatMessageDTO;
 import com.example.chatservice.jwt.JwtUtil;
-import com.example.chatservice.rpc.GrpcClientService;
-import com.example.chatservice.state.SocketStateService;
+import com.example.chatservice.redis.RedisPublisher;
+import com.example.chatservice.service.SocketStateService;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -21,7 +21,8 @@ public class ChatRouter {
     private final SocketIOServer server;
     private final SocketStateService socketStateService;
     private final JwtUtil jwtUtil;
-    private final GrpcClientService grpcClient;
+    private final RedisPublisher redisPublisher;
+
 
     @PostConstruct
     public void init() {
@@ -31,7 +32,8 @@ public class ChatRouter {
     private void registerEvents(SocketIOServer server) {
         server.addConnectListener(onUserConnect());
         server.addDisconnectListener(onUserDisconnect());
-        server.addEventListener("send_message", WSChatMessageDTO.class, onMessageReceived());
+        server.addEventListener("send_direct_message", ChatMessageDTO.class, onDirectMessageReceived());
+        server.addEventListener("send_group_message", ChatMessageDTO.class, onGroupMessageReceived());
     }
 
 
@@ -61,10 +63,17 @@ public class ChatRouter {
         };
     }
 
-    private DataListener<WSChatMessageDTO> onMessageReceived() {
+    private DataListener<ChatMessageDTO> onDirectMessageReceived() {
         return ((client, data, ackSender) -> {
-            Thread.startVirtualThread(() -> socketStateService.sendMessage(data));
-            grpcClient.sendMessage(data);
+            Thread.startVirtualThread(() -> broadcastMessage(data));
+            redisPublisher.publishDirectMessage(data);
+        });
+    }
+
+    private DataListener<ChatMessageDTO> onGroupMessageReceived() {
+        return ((client, data, ackSender) -> {
+            Thread.startVirtualThread(() -> broadcastMessage(data));
+            redisPublisher.publishGroupMessage(data);
         });
     }
 
@@ -81,6 +90,10 @@ public class ChatRouter {
         String clientEmail = client.get("clientEmail");
         if (clientEmail == null) throw new RuntimeException("Client doesn't exist");
         return clientEmail;
+    }
+
+    private void broadcastMessage(ChatMessageDTO messageDTO) {
+        socketStateService.sendMessage(messageDTO);
     }
 
 }

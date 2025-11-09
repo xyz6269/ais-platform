@@ -41,11 +41,24 @@ services:
     volumes:
       - postgres_event_data:/var/lib/postgresql/data
 
+  postgres-project:
+    image: postgres:15
+    container_name: platform-app-container-postgres-projectdb
+    restart: always
+    environment:
+      POSTGRES_DB: project_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+    ports:
+      - "5435:5432"
+    volumes:
+      - postgres_project_data:/var/lib/postgresql/data
+
 volumes:
   postgres_user_data:
   postgres_chat_data:
   postgres_event_data:
+  postgres_project_data:
 
-networks:
 
 

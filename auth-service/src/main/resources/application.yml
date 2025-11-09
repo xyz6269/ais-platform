@@ -1,5 +1,8 @@
 server:
   port: 8081
+  error:
+    include-message: always
+    include-stacktrace: always
 
 spring:
   threads:
@@ -47,8 +50,10 @@ spring:
           writetimeout: 20000
   data:
     redis:
-      host: host.docker.internal
+      host: localhost
       port: 6379
+      repositories:
+        enabled: false
 
 management:
   endpoints:

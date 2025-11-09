@@ -1,6 +1,8 @@
 package com.example.chatservice.entity;
 
 import jakarta.persistence.*;
+import lombok.Builder;
+import org.hibernate.annotations.BatchSize;
 
 import java.time.Instant;
 import java.util.List;
@@ -8,14 +10,15 @@ import java.util.UUID;
 
 
 @Entity
-@DiscriminatorValue("GROUP")
-public class GroupRoom extends Room {
+@Table(name = "group_room")
+public class GroupRoom extends DirectRoom {
 
     @Column(length = 100)
     private String name;
 
     @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
     @JoinColumn(name = "room_id")
+    @BatchSize(size = 25)
     private List<Participant> admins;
 
 
@@ -26,7 +29,6 @@ public class GroupRoom extends Room {
         this.name = name;
         this.admins = admins;
     }
-
 
     public String getName() {
         return name;

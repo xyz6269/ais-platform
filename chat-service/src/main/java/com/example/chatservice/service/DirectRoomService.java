@@ -2,8 +2,10 @@ package com.example.chatservice.service;
 
 import com.example.chatservice.DTO.DirectRoomDTO;
 import com.example.chatservice.DTO.ParticipantDTO;
+import com.example.chatservice.entity.ChatMessage;
 import com.example.chatservice.entity.DirectRoom;
 import com.example.chatservice.entity.Participant;
+import com.example.chatservice.exceptions.RoomNotFoundException;
 import com.example.chatservice.repository.DirectRoomRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -22,7 +24,6 @@ public class DirectRoomService {
 
     private final DirectRoomRepository directRoomRepository;
     private final ParticipantService participantService;
-    private final RoomService roomService;
 
     @Transactional
     public void createDirectRoom(DirectRoomDTO dto) {
@@ -33,13 +34,8 @@ public class DirectRoomService {
     }
 
     @Transactional(readOnly = true)
-    public Participant getParticipant(String email) {
-        return participantService.getParticipantByEmail(email);
-    }
-
-    @Transactional(readOnly = true)
-    public DirectRoom getDirectRoom(UUID id) {
-        return (DirectRoom) roomService.getRoomById(id);
+    public DirectRoomDTO getDirectRoom(UUID id) {
+        return DirectRoomDTO.toDTO(getDirectRoomEntity(id));
     }
 
     @Transactional(readOnly = true)
@@ -50,26 +46,45 @@ public class DirectRoomService {
     }
 
     @Transactional(readOnly = true)
-    public List<DirectRoomDTO> getRoomsWhereUserIsParticipant(String email) {
-        log.debug("Fetching all rooms where the user : {} is a participant", email);
-        return directRoomRepository.findRoomsByUserEmail(email)
+    public List<DirectRoomDTO> getRoomsWhereUserIsParticipant(String dto) {
+        log.debug("Fetching all rooms where the user : {} is a participant", dto);
+        return directRoomRepository.findRoomsByUserEmail(dto)
                 .stream()
                 .map(DirectRoomDTO::toDTO)
                 .collect(Collectors.toList());
     }
 
-    private DirectRoom buildDirectRoomFromDTO(DirectRoomDTO dto) {
-        DirectRoom directRoom =  new DirectRoom();
-        directRoom.setId(UUID.randomUUID());
-        directRoom.setCreatedAt(Instant.now());
-        directRoom.setParticipants(getParticipantsFromDTO(dto.participants().stream()
-                .map(ParticipantDTO::email)
-                .toList()));
-        return directRoom;
+    @Transactional
+    public void addMessageToDirectChatRoom(ChatMessage message, UUID roomId) {
+        log.debug("Fetching room : {} to add the new message to it : {} is a participant", roomId, message.getContent());
+        DirectRoom room = getDirectRoomEntity(roomId);
+        room.getMessages().add(message);
+        updateDirectRoom(room);
+    }
+
+    @Transactional(readOnly = true)
+    public DirectRoom getDirectRoomEntity(UUID uuid) {
+        return directRoomRepository.findById(uuid)
+                .orElseThrow(() -> new RoomNotFoundException("this room of id : "+ uuid.toString() +" doesn't exist"));
+    }
+
+    @Transactional
+    public void updateDirectRoom(DirectRoom room) {
+        directRoomRepository.save(room);
     }
 
     private List<Participant> getParticipantsFromDTO(List<String> emails) {
         return participantService.getParticipantsByEmails(emails);
+    }
+
+    private DirectRoom buildDirectRoomFromDTO(DirectRoomDTO dto) {
+        return DirectRoom.builder()
+                .id(UUID.randomUUID())
+                .createdAt(Instant.now())
+                .participants(getParticipantsFromDTO(dto.participants().stream()
+                        .map(ParticipantDTO::email)
+                        .toList()))
+                .build();
     }
 
 }

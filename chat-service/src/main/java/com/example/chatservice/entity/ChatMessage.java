@@ -23,34 +23,29 @@ public class ChatMessage {
     @JoinColumn(nullable = false)
     private Participant sender;
 
-    @Column(nullable = false, length = 100)
+    @Column(nullable = false, length = 50)
     private Instant sentAt;
 
-    @Column(nullable = false, length = 100)
+    @Column(nullable = false, length = 1000)
     private String content;
 
     @Column(name = "attachment_type", length = 50)
     private AttachmentType attachmentType = AttachmentType.NONE;
 
     @Lob
-    @Column(name = "attachment_data", nullable = true)
+    @Column(name = "attachment_data")
     private byte[] attachmentData;
-
-    @ManyToOne()
-    @JoinColumn(name = "room_id", nullable = false)
-    private Room room;
 
 
     public ChatMessage() {}
 
-    public ChatMessage(UUID id, Participant sender, Instant sentAt, String content, AttachmentType attachmentType, byte[] attachmentData, Room room) {
+    public ChatMessage(UUID id, Participant sender, Instant sentAt, String content, AttachmentType attachmentType, byte[] attachmentData) {
         this.id = id;
         this.sender = sender;
         this.sentAt = sentAt;
         this.content = content;
         this.attachmentType = attachmentType;
         this.attachmentData = attachmentData;
-        this.room = room;
     }
 
 
@@ -102,11 +97,4 @@ public class ChatMessage {
         this.attachmentData = attachmentData;
     }
 
-    public Room getRoom() {
-        return room;
-    }
-
-    public void setRoom(Room room) {
-        this.room = room;
-    }
 }

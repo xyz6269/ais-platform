@@ -29,7 +29,6 @@ import java.util.List;
 
 @Configuration
 @EnableMethodSecurity(
-        prePostEnabled = true,
         securedEnabled = true,
         jsr250Enabled = true
 )
@@ -67,8 +66,7 @@ public class SecurityConfig {
 
     @Bean
     public AuthenticationProvider authenticationProvider() {
-        DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();
-        authProvider.setUserDetailsService(userDetailsService());
+        DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider(userDetailsService());
         authProvider.setPasswordEncoder(passwordEncoder());
         return authProvider;
     }

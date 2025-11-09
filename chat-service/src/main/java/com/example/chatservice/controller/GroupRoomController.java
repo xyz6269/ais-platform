@@ -23,6 +23,7 @@ public class GroupRoomController {
 
     @PostMapping("/create-room")
     @SecurityRequirement(name = "bearerAuth")
+    @PreAuthorize("hasAuthority('ADMIN')")
     public ResponseEntity<String> createRoom(@Valid @RequestBody GroupRoomDTO dto) {
         groupRoomService.createGroupRoom(dto);
         return ResponseEntity.ok("group chat room : " + dto.id() + " has been created");
@@ -30,6 +31,7 @@ public class GroupRoomController {
 
     @DeleteMapping("/delete-room/{id}")
     @SecurityRequirement(name = "bearerAuth")
+    @PreAuthorize("hasAuthority('ADMIN')")
     public ResponseEntity<String> deleteRoom(@PathVariable UUID id) {
         groupRoomService.deleteGroupRoom(id);
         return ResponseEntity.ok("group chat room : " + id + " has been deleted");
@@ -37,10 +39,10 @@ public class GroupRoomController {
 
     @PutMapping("/add-participant-to-room")
     @SecurityRequirement(name = "bearerAuth")
+    @PreAuthorize("hasAuthority('ADMIN')")
     public ResponseEntity<String> addParticipantsToGroupRoom(@Valid @RequestBody AddParticipantDTO dto) {
         groupRoomService.addParticipantsToGroupRoom(dto);
         return ResponseEntity.ok("user : " + dto.participantEmail() + " has been added to the participants of group : " + dto.roomId());
-
     }
 
     @GetMapping("/all")
@@ -52,6 +54,7 @@ public class GroupRoomController {
 
     @GetMapping("/all-participant-rooms")
     @SecurityRequirement(name = "bearerAuth")
+    @PreAuthorize("hasAuthority('ADMIN')")
     public ResponseEntity<List<GroupRoomDTO>> getAllParticipantRooms() {
         return ResponseEntity.ok(groupRoomService.getRoomsWhereUserIsParticipant(ParticipantService.getCurrentUser()));
     }

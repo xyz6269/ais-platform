@@ -17,14 +17,14 @@ public class MemberController {
 
     private final MemberService memberService;
 
-    @PostMapping("/signin")
-    public ResponseEntity<LoginResponse> login(@Valid @RequestBody LoginDTO request) {
+    @PostMapping("/authenticate")
+    public ResponseEntity<LoginResponse> signIn(@Valid @RequestBody LoginDTO request) {
         return ResponseEntity.ok(memberService.authenticateUser(request));
     }
 
-    @PostMapping("/signup")
+    @PostMapping("/register")
     @ResponseStatus(HttpStatus.CREATED)
-    public ResponseEntity<String> signup(@Valid @RequestBody SignUpDTO request) {
+    public ResponseEntity<String> signUp(@Valid @RequestBody SignUpDTO request) {
         return ResponseEntity.ok(memberService.registerUser(request));
     }
 
@@ -44,5 +44,11 @@ public class MemberController {
     @PostMapping("/health")
     public ResponseEntity<String> healthCheck() {
         return ResponseEntity.ok("authentication service status : ✅");
+    }
+
+    @PutMapping("/make-admin/{id}")
+    public ResponseEntity<String> makeMemberAdmin(@PathVariable Long id) {
+        memberService.makeAdmin(id);
+        return ResponseEntity.ok("user of id : " + id + " has been promoted to admin");
     }
 }

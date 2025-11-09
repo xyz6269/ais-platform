@@ -9,14 +9,16 @@ import org.springframework.stereotype.Repository;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
+
 
 @Repository
-public interface ParticipantRepository extends JpaRepository<Participant, UUID> {
+public interface ParticipantRepository extends JpaRepository<Participant, Long> {
 
     Optional<Participant> findParticipantByEmail(String email);
 
     @Query("SELECT p FROM Participant p WHERE p.email IN :emails")
     List<Participant> findParticipantsByEmails(@Param("emails") List<String> emails);
+
+    List<Participant> findParticipantByIsAdmin(boolean admin);
 
 }

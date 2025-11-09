@@ -14,7 +14,7 @@ public record ChatMessageDTO(
         String content,
         String attachmentType,
         byte[] attachmentData,
-        UUID roomId
+        UUID room
 ) {
     public static ChatMessageDTO toDTO(ChatMessage message) {
         return new ChatMessageDTO(
@@ -25,7 +25,7 @@ public record ChatMessageDTO(
                 message.getContent(),
                 message.getAttachmentType().name(),
                 message.getAttachmentData(),
-                message.getRoom().getId()
+                null
         );
     }
 }

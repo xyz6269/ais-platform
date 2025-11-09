@@ -5,10 +5,10 @@ import com.example.authservice.DTO.LoginDTO;
 import com.example.authservice.DTO.LoginResponse;
 import com.example.authservice.DTO.ParticipantDTO;
 import com.example.authservice.DTO.SignUpDTO;
-import com.example.authservice.config.RedisPublisher;
+import com.example.authservice.redis.RedisPublisher;
 import com.example.authservice.entity.Member;
 import com.example.authservice.enums.*;
-import com.example.authservice.exceptions.InvalidPhoneNumber;
+import com.example.authservice.exceptions.InvalidPhoneNumberException;
 import com.example.authservice.exceptions.UserNotFoundException;
 import com.example.authservice.mail.EmailTemplateService;
 import com.example.authservice.repository.MemberRepository;
@@ -22,7 +22,6 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -51,14 +50,11 @@ public class MemberService {
             authentication = authenticationManager.authenticate(token);
             CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
             String jwtToken = jwtUtil.generateToken(userDetails);
-
             log.info("User {} successfully logged in", dto.email());
-
-            log.info("creating chat participant : {}", dto.email());
             return new LoginResponse(jwtToken);
         } catch (BadCredentialsException e) {
             log.warn("user : {}, entered bad credentials : {}",dto.email() ,e.getMessage());
-            throw e;
+            throw new BadCredentialsException("Invalid Credentials");
         }
     }
 
@@ -102,16 +98,16 @@ public class MemberService {
         sendActivationEmail(member.getEmail(), member.getLastName(), member.getFirstName());
 
         try {
-            publishToRedis(new ParticipantDTO(member.getId(), member.getEmail()));
+            log.info("publishing to redis pub/sub");
+            publishParticipantToRedis(new ParticipantDTO(member.getId(), member.getEmail()));
         } catch (Exception e) {
-            log.error("Failed to publish user info to Redis Pub/Sub for user {}. The chat-service may not be available.", member.getEmail(), e);
+            log.error("Failed to publishParticipant user info to Redis Pub/Sub for user {}. The redis pub/sub may not be available.", member.getEmail(), e);
         }
 
         log.info("user {} info published to Redis Pub/Sub ", member.getEmail());
 
         return member.getEmail();
     }
-
 
     @Transactional(readOnly = true)
     public Member getUserById(Long id) {
@@ -125,14 +121,26 @@ public class MemberService {
                 .orElseThrow(() -> new UserNotFoundException("user doesn't exist"));
     }
 
+    @Transactional
+    public void makeAdmin(Long id) {
+        Member newAdmin = getUserById(id);
+        newAdmin.getRoles().add(Role.ADMIN);
+        memberRepository.save(newAdmin);
+        try {
+            publishAdminToRedis(new ParticipantDTO(newAdmin.getId(), newAdmin.getEmail()));
+        } catch (Exception e) {
+            log.error("Failed to publishParticipant user info to Redis Pub/Sub for user {}. The chat-service may not be available.", newAdmin.getEmail(), e);
+        }
+    }
+
     public String getCurrentUser() {
-        return SecurityContextHolder.getContext().getAuthentication().getName();
+        return JwtUtil.getCurrentUserEmail();
     }
 
     private String validatePhoneNumber(String phoneNumber) {
 
         if (!PhoneNumberValidator.isValid(phoneNumber, "MA")) {
-           throw new InvalidPhoneNumber("invalid phone number");
+           throw new InvalidPhoneNumberException("invalid phone number");
         }
 
         return PhoneNumberValidator.formatToE164(phoneNumber, "MA");
@@ -144,7 +152,7 @@ public class MemberService {
             emailTemplateService.sendAccountActivationEmailNotification(email, lastName, firstName);
             log.debug("Activation email sent to {}", email);
         } catch (Exception e) {
-            log.error("failed to send email to user : {}, due to : {}",email ,e.getMessage());
+            log.error("failed to send account activation email to user : {}, due to : {}",email ,e.getMessage());
         }
     }
 
@@ -154,13 +162,18 @@ public class MemberService {
             emailTemplateService.sendWelcomeEmail(email, lastName, firstName);
             log.debug("Welcome email sent to {}", email);
         } catch (Exception e) {
-            log.error("failed to send email to user : {}, due to : {}",email ,e.getMessage());
+            log.error("failed to send welcome email to user : {}, due to : {}",email ,e.getMessage());
         }
     }
 
     @Async
-    public void publishToRedis(ParticipantDTO msg) {
-        redisPublisher.publish(msg);
+    public void publishParticipantToRedis(ParticipantDTO msg) {
+        redisPublisher.publishParticipant(msg);
+    }
+
+    @Async
+    public void publishAdminToRedis(ParticipantDTO msg) {
+        redisPublisher.publishAdminMessage(msg);
     }
 
 }
